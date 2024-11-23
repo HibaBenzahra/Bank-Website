@@ -2,7 +2,8 @@ from bank import app, db
 from bank.forms import RegisterForm, LoginForm, TransactionForm
 from flask import render_template, redirect, url_for, flash
 from bank.models import User, Account, Transaction
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
+import datetime 
 
 
 
@@ -50,7 +51,66 @@ def register_page():
 @login_required
 def transactions_page():
     form = TransactionForm()
+    if form.validate_on_submit():
+        from_account = Account.query.filter_by(account_number=form.from_acc.data, user_id=current_user.id).first()
+
+        if not from_account:
+            flash("Source account not found or you do not have access to this account", category='danger')
+            return redirect(url_for('transactions_page'))
+
+
+        to_account = Account.query.filter_by(account_number=form.recipient.data).first()
+
+        if not to_account:
+            flash("Recipient account not found", category='danger')
+            return redirect(url_for('transactions_page'))
+
+
+        transaction_type = form.type.data
+
+
+        try:
+            amount = int(form.amount.data)
+        except ValueError:
+            flash("Invalid amount entered", category='danger')
+            return redirect(url_for('transactions_page'))
+
+        if amount <= 0:
+            flash("Amount must be positive", category='danger')
+            return redirect(url_for('transactions_page'))
+
+
+        if from_account.balance >= amount:
+
+            from_account.balance -= amount
+
+            to_account.balance += amount
+
+
+            transaction = Transaction(
+                type=transaction_type,
+                amount=amount,
+                acc_id=from_account.id,
+                destinated_acc_id=to_account.id,
+                date=datetime.utcnow()
+            )
+
+
+            db.session.add(transaction)
+            db.session.commit()
+
+
+            flash(f"Transaction of {amount} from {from_account.account_number} to {to_account.account_number} was successful", category='success')
+        else:
+            flash("Insufficient balance for this transaction", category='danger')
+
+        return redirect(url_for('transactions_page'))
     return render_template("transactions.html", form=form)
+
+#@app.route("/account")
+#def account_page():
+
+ #   return render_template("account.html")
 
 @app.route('/logout')
 def logout_page():

@@ -45,3 +45,6 @@ class TransactionForm(FlaskForm):
     notes = TextAreaField( validators=[DataRequired(), Length(min=5, max=150)])
     submit = SubmitField(label='Submit Transaction')
 
+#class AccountForm(FlaskForm):
+
+
