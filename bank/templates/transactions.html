@@ -1,125 +1,85 @@
 {% extends 'base.html' %}
 
 {% block title %}
-Transactions Page
+Transactions
 {% endblock %}
 
-
 {% block content %}
-<body>
-    <div class="container mt-5">
-        <div class="row">
-            <!-- Make Transaction Section -->
-            <div class="col-md-6">
-                <h2 class="text-center mb-4">Make a Transaction</h2>
-                <form method="POST" class="p-4 border rounded shadow-sm bg-light">
-                    
-                    <!-- Transaction Type -->
-                    <div class="mb-3">
-                        <label for="transactionType" class="form-label">Transaction Type</label>
-                        <select id="transactionType" name="transaction_type" class="form-select" required>
-                            <option value="" disabled selected>Select Transaction Type</option>
-                            <option value="deposit">Deposit</option>
-                            <option value="withdrawal">Withdrawal</option>
-                            <option value="transfer">Transfer</option>
-                        </select>
-                    </div>
+<div class="container mt-5">
+    <h2 class="text-center">Transactions</h2>
+    <div class="row mt-4">
+        <!-- Transaction Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Make a Transaction</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
 
-                    <!-- Account Selection -->
-                    <div class="mb-3">
-                        <label for="account" class="form-label">From Account</label>
-                        <select id="account" name="account_id" class="form-select" required>
-                            <option value="" disabled selected>Select Account</option>
-                            {% for account in accounts %}
-                            <option value="{{ account.id }}">{{ account.name }} - ${{ "{:,.2f}".format(account.balance) }}</option>
-                            {% endfor %}
-                        </select>
-                    
-                    </div>
+                        <!-- Transaction Type -->
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Transaction Type</label>
+                            {{ form.type(class="form-select", id="type") }}
+                        </div>
 
-                    <!-- Recipient Account (Visible Only if Transfer Selected) -->
-                    <div class="mb-3" id="recipientAccount" style="display: none;">
-                        <label for="recipient" class="form-label">Recipient Account (for Transfers)</label>
-                        {{ form.recipient(class="form-control", placeholder="Enter Recipient Account ID")}}
-                    </div>
+                        <!-- From Account -->
+                        <div class="mb-3">
+                            <label for="from_acc" class="form-label">From Account</label>
+                            {{ form.from_acc(class="form-select", id="from_acc") }}
+                        </div>
 
-                    <!-- Amount -->
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">Amount</label>
-                        {{ form.amount(class="form-control", placeholder="Enter Amount")}}
-                    </div>
+                        <!-- Recipient Account -->
+                        <div class="mb-3">
+                            <label for="recipient" class="form-label">Recipient Account</label>
+                            {{ form.recipient(class="form-select", id="recipient") }}
+                        </div>
 
-                    <!-- Notes -->
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">Notes (optional)</label>
-                        {{ form.notes(class="form-control", placeholder="Enter any notes")}}
-                    </div>
+                        <!-- Amount -->
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount (MAD)</label>
+                            {{ form.amount(class="form-control", id="amount", placeholder="Enter amount") }}
+                        </div>
 
-                    <!-- Submit Button -->
-                    {{ form.submit(class="btn btn-primary w-100") }}
-                </form>
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            {{ form.submit(class="btn btn-primary w-100") }}
+                        </div>
+                    </form>
+                </div>
             </div>
+        </div>
 
-            <!-- Transaction History Section -->
-            <div class="col-md-6">
-                <h2 class="text-center mb-4">Transaction History</h2>
-                <div id="transactionHistory" class="p-4 border rounded shadow-sm bg-light" style="height: 400px; overflow-y: auto;">
-                    {% for transaction in transactions %}
-                    <div class="transaction-item border-bottom pb-2 mb-2">
-                        <p><strong>{{ transaction.type.capitalize() }}</strong> - ${{ "{:,.2f}".format(transaction.amount) }}</p>
-                        <p><small>Date: {{ transaction.date.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
-                        <p><small>Account: {{ transaction.account_id }}</small></p>
-                        {% if transaction.recipient_account %}
-                        <p><small>Recipient: {{ transaction.recipient_account }}</small></p>
-                        {% endif %}
-                        <p><small>Notes: {{ transaction.notes }}</small></p>
-                    </div>
-                    {% endfor %}
+        <!-- Transaction History -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Transaction History</h5>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
+                    {% if transactions %}
+                    <ul class="list-group">
+                        {% for transaction in transactions %}
+                        <li class="list-group-item">
+                            <strong>{{ transaction.type.capitalize() }}</strong> - {{ transaction.amount }} MAD
+                            <br>
+                            <small>Date: {{ transaction.date.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            <br>
+                            <small>From Account: {{ transaction.acc_id }}</small>
+                            {% if transaction.destinated_acc_id %}
+                            <br>
+                            <small>To Account: {{ transaction.destinated_acc_id }}</small>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No transactions available.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- JavaScript to Show/Hide Recipient Account for Transfers -->
-    <script>
-        document.getElementById('transactionType').addEventListener('change', function() {
-            const recipientAccountField = document.getElementById('recipientAccount');
-            if (this.value === 'transfer') {
-                recipientAccountField.style.display = 'block';
-            } else {
-                recipientAccountField.style.display = 'none';
-            }
-        });
-
-        // Auto-refresh transaction history after submission
-        document.querySelector("form").addEventListener("submit", function(event) {
-            event.preventDefault();
-            fetch("{{ url_for('transactions_page') }}", {
-                method: "POST",
-                body: new FormData(this),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const transactionHistory = document.getElementById("transactionHistory");
-                    const transactionItem = document.createElement("div");
-                    transactionItem.classList.add("transaction-item", "border-bottom", "pb-2", "mb-2");
-
-                    transactionItem.innerHTML = `
-                        <p><strong>${data.transaction.type}</strong> - $${data.transaction.amount.toFixed(2)}</p>
-                        <p><small>Date: ${data.transaction.date}</small></p>
-                        <p><small>Account: ${data.transaction.account_id}</small></p>
-                        ${data.transaction.recipient_account ? `<p><small>Recipient: ${data.transaction.recipient_account}</small></p>` : ""}
-                        <p><small>Notes: ${data.transaction.notes}</small></p>
-                    `;
-                    transactionHistory.prepend(transactionItem);
-                } else {
-                    alert("Transaction failed. Please try again.");
-                }
-            });
-        });
-    </script>
-</body>
-
-
+</div>
 {% endblock %}

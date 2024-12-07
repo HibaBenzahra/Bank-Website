@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Success
+{% endblock %}
+
+{% block content %}
+    <div class="alert alert-success text-center mt-5">
+        <h2 class="mb-3">🎉 Successful! 🎉</h2>
+        <p class="mb-4">Thank you for your order! Your payment has been processed, and your order has been placed successfully.</p>
+        <a href="{{ url_for('login_page') }}" class="btn btn-primary btn-lg">you can now login</a>
+    </div>
+{% endblock %}

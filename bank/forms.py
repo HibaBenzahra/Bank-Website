@@ -1,7 +1,8 @@
 from bank.models import User, Account, Transaction
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import Length, EqualTo, Email, DataRequired, ValidationError
+from flask_login import current_user
 
 
 class RegisterForm(FlaskForm):
@@ -38,12 +39,31 @@ class LoginForm(FlaskForm):
     submit = SubmitField(label='Login')
 
 class TransactionForm(FlaskForm):
-    type = StringField(validators=[DataRequired(), Length(min=6, max=30)])
+    type = SelectField(
+    'Transaction Type',
+    choices=[('transfer', 'Transfer')],validators=[DataRequired()])
     from_acc = StringField(validators=[DataRequired(), Length(min=8, max=30)])
-    recipient = StringField(validators=[DataRequired(), Length(min=8, max=30)])
+    recipient = StringField(validators=[DataRequired()])
     amount = StringField(validators=[DataRequired(), Length(min=2, max=6)])
-    notes = TextAreaField( validators=[DataRequired(), Length(min=5, max=150)])
     submit = SubmitField(label='Submit Transaction')
+
+    
+    def validate_from_acc(self, from_acc_tocheck):
+        from_account = Account.query.filter_by(type=from_acc_tocheck.data, user_id = current_user.id).first()
+        if not from_account:
+            raise ValidationError("You don't such account, Please try another one!")
+    
+    def validate_recipient(self, recipient_tocheck):
+        to_account = Account.query.filter_by(id=recipient_tocheck.data).first()
+        if not to_account:
+            raise ValidationError("This recipient account doesn't exist, Please try another one!")
+        
+    def validate_amout(self, amount_tocheck):
+        if amount_tocheck <= 0:
+            raise ValidationError("Amount must be positive!")
+
+
+
 
 #class AccountForm(FlaskForm):
 
