@@ -1,7 +1,85 @@
-pip install flask
-pip install flask_wtf
-pip install wtforms
-pip install email-validator
-pip install flask_bcrypt
-pip install flask_login
-...
+
+
+# Bank Website Project
+
+This project is a simple **bank website** built with **Flask**, featuring basic user authentication, transaction handling, and email verification.
+
+## Features
+
+- **User Registration & Login**: Users can create an account and log in securely.
+- **Transactions**: Users can perform transactions, such as deposits and withdrawals.
+- **Email Verification**: A verification email is sent to the user upon registration to confirm their email address.
+- **SQLAlchemy with MySQL**: The backend uses SQLAlchemy ORM to interact with a MySQL database.
+- **Security**: Includes password hashing, authentication, and secure session management.
+
+## Installation
+
+### Prerequisites
+
+- **Python 3.x** or above
+- **MySQL** or **MariaDB** database server
+- **Flask** and required Python packages (see below)
+
+### Steps to Install
+
+1. Clone the repository to your local machine:
+   ```bash
+   git clone https://github.com/your-username/bank-website.git
+   cd bank-website
+   ```
+
+2. Create a virtual environment (optional but recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
+
+3. Install required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Set up the MySQL database and configure it with the appropriate credentials.
+
+5. Create the necessary tables:
+   - Run the Flask migrations or initialize the database by running:
+     ```bash
+     python manage.py db init
+     python manage.py db migrate
+     python manage.py db upgrade
+     ```
+
+6. Set up your **environment variables** (such as database connection string, secret keys, etc.). Example for `.env`:
+   ```bash
+   FLASK_APP=app.py
+   FLASK_ENV=development
+   SECRET_KEY=your-secret-key
+   SQLALCHEMY_DATABASE_URI=mysql://username:password@localhost/db_name
+   MAIL_USERNAME=your-email@example.com
+   MAIL_PASSWORD=your-email-password
+   ```
+
+## Usage
+
+1. Run the Flask development server:
+   ```bash
+   flask run
+   ```
+
+2. Visit **http://127.0.0.1:5000/** in your browser to access the website.
+
+## Security Features
+
+- **Password Hashing**: Passwords are securely stored using hashing algorithms.
+- **Session Management**: Flask sessions are used to keep users logged in across requests.
+- **Email Verification**: A confirmation email is sent to the user during registration to validate their email address.
+
+## Contributing
+
+If you'd like to contribute, feel free to fork the repository and submit a pull request. Make sure to follow the coding standards and write tests for new features.
+
+## License
+
+This project is licensed under the MIT License.
+
+---
